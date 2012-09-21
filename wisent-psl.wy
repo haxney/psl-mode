@@ -1,0 +1,121 @@
+%languagemode psl-mode
+
+;; The default goal.
+%start goal
+;; Alternate goals needed for re-parse.
+%start function_def
+%start variable_def
+%start block_statements
+
+;;    - Needed by EXPANDFULL clauses
+%start function_parameters
+%start function_parameter
+
+;; -----------------------------
+;; Block & Parenthesis terminals
+;; -----------------------------
+%type  <block>       ;;syntax "\\s(\\|\\s)" matchdatatype block
+
+%token <block>       PAREN_BLOCK "(LPAREN RPAREN)"
+%token <block>       BRACE_BLOCK "(LBRACE RBRACE)"
+%token <block>       BRACK_BLOCK "(LBRACK RBRACK)"
+
+%token <open-paren>  LPAREN      "("
+%token <close-paren> RPAREN      ")"
+%token <open-paren>  LBRACE      "{"
+%token <close-paren> RBRACE      "}"
+%token <open-paren>  LBRACK      "["
+%token <close-paren> RBRACK      "]"
+
+;; ------------------
+;; Operator terminals
+;; ------------------
+%type  <punctuation> ;;syntax "\\(\\s.\\|\\s$\\|\\s'\\)+" matchdatatype string
+
+%token <punctuation> PLUS       "+"
+%token <punctuation> PLUSPLUS    "++"
+%token <punctuation> PLUSEQ     "+="
+
+%token <punctuation> MINUS      "-"
+%token <punctuation> MINUSMINUS  "--"
+%token <punctuation> MINUSEQ    "-="
+
+%token <punctuation> LT         "<"
+%token <punctuation> GT         ">"
+
+%token <punctuation> PERIOD     "."
+%token <punctuation> COLON      ":"
+%token <punctuation> SEMICOLON	";"
+%token <punctuation> COMMA      ","
+%token <punctuation> ASSIGN     "="
+%token <punctuation> AT         "@"
+
+
+;; -----------------
+;; Literal terminals
+;; -----------------
+%token <string>      STRING_LITERAL
+
+%type  <number>      ;;syntax semantic-lex-number-expression
+%token <number>      NUMBER_LITERAL
+
+%type  <symbol>      ;;syntax "\\(\\sw\\|\\s_\\)+"
+%token <symbol>      NAME
+
+%token <symbol>      BOOLEAN_LITERAL "\\`false\\'"
+%token <symbol>      BOOLEAN_LITERAL "\\`true\\'"
+
+;; -----------------
+;; Keyword terminals
+;; -----------------
+%type  <keyword> ;;syntax "\\(\\sw\\|\\s_\\)+" matchdatatype keyword
+
+%keyword IF          "if"
+%put     IF summary
+"Start 'if' conditional statement"
+
+%keyword FOR         "for"
+%put     FOR summary
+"Start a 'for' loop"
+
+%keyword WHILE       "while"
+%put     WHILE summary
+"Start a 'while' loop"
+
+%keyword LAMBDA      "lambda"
+%put     LAMBDA summary
+"Create anonymous function"
+
+%keyword DEFFUN      "deffun"
+%put     DEFFUN summary
+"Define a new function"
+
+%keyword DEFVAR      "defvar"
+%put     DEFVAR summary
+"Define a new variable"
+
+%%
+
+goal
+  : toplevel_expr
+  | simple_expr
+  ;
+
+function_def
+  : DEFFUN NAME function_parameter_list
+  ;
+
+function_parameter_list
+  : PARENBLOCK
+    (EXPANDFULL $1 function_parameters)
+  ;
+
+;; parameters: '(' [varargslist] ')'
+function_parameters
+  : LPAREN
+    ()
+  | RPAREN
+    ()
+  | NAME COMMA
+  | NAME RPAREN
+  ;
