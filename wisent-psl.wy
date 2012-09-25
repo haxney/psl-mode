@@ -5,11 +5,9 @@
 ;; Alternate goals needed for re-parse.
 %start function_def
 %start variable_def
-%start block_statements
 
 ;;    - Needed by EXPANDFULL clauses
 %start function_parameters
-%start function_parameter
 
 ;; -----------------------------
 ;; Block & Parenthesis terminals
@@ -54,6 +52,7 @@
 ;; -----------------
 ;; Literal terminals
 ;; -----------------
+%type  <string>      ;;syntax "\\s\"" matchdatatype sexp
 %token <string>      STRING_LITERAL
 
 %type  <number>      ;;syntax semantic-lex-number-expression
@@ -94,11 +93,42 @@
 %put     DEFVAR summary
 "Define a new variable"
 
+%keyword IN      "in"
+%put     IN summary
+"Specify the scope of a variable or function definition"
+
 %%
 
 goal
-  : toplevel_expr
-  | simple_expr
+  : simple_expr
+  | toplevel_expr
+  ;
+
+;; simple_expr: small_expr (';' small_expr)* [';']
+simple_expr
+  : small_expr_list semicolon_opt
+  ;
+
+;; small_expr (';' small_expr)*
+small_expr_list
+  : small_expr
+  | small_expr_list SEMICOLON small_expr
+  ;
+
+small_expr
+  : atom
+    (CODE-TAG $1 nil)
+  ;
+
+atom
+  : NUMBER_LITERAL
+  | STRING_LITERAL
+  | BOOLEAN_LITERAL
+  ;
+
+toplevel_expr
+  : function_def
+  | variable_def
   ;
 
 function_def
@@ -106,16 +136,56 @@ function_def
   ;
 
 function_parameter_list
-  : PARENBLOCK
+  : PAREN_BLOCK
     (EXPANDFULL $1 function_parameters)
   ;
 
-;; parameters: '(' [varargslist] ')'
 function_parameters
   : LPAREN
     ()
   | RPAREN
     ()
   | NAME COMMA
+    (VARIABLE-TAG $1 nil nil)
   | NAME RPAREN
+    (VARIABLE-TAG $1 nil nil)
   ;
+
+variable_def
+  : DEFVAR NAME ASSIGN simple_expr IN simple_expr
+  ;
+
+;; [',']
+comma_opt
+  : ;;EMPTY
+  | COMMA
+  ;
+
+;; [';']
+semicolon_opt
+  : ;;EMPTY
+  | SEMICOLON
+  ;
+
+%%
+
+(define-lex psl-lexer
+"Lexer for `psl-mode'"
+;;std stuff
+  semantic-lex-ignore-whitespace
+  semantic-lex-ignore-newline
+  semantic-lex-ignore-comments
+
+  ;;stuff generated from the wy file(one for each "type" declaration)
+  wisent-psl-wy--<number>-regexp-analyzer
+  wisent-psl-wy--<string>-sexp-analyzer
+
+  wisent-psl-wy--<keyword>-keyword-analyzer
+
+  wisent-psl-wy--<symbol>-regexp-analyzer
+  wisent-psl-wy--<punctuation>-string-analyzer
+  wisent-psl-wy--<block>-block-analyzer
+
+  ;;;;more std stuff
+  semantic-lex-default-action
+  )
