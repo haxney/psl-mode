@@ -9,6 +9,7 @@
 ;;    - Needed by EXPANDFULL clauses
 %start function_parameters
 %start arguments
+%start block_body
 
 ;; -----------------------------
 ;; Block & Parenthesis terminals
@@ -74,6 +75,14 @@
 %put     IF summary
 "Start 'if' conditional statement"
 
+%keyword THEN          "then"
+%put     THEN summary
+"Introduce 'true' branch of an 'if' statement"
+
+%keyword ELSE          "else"
+%put     ELSE summary
+"Introduce 'false' branch of an 'if' statement"
+
 %keyword FOR         "for"
 %put     FOR summary
 "Start a 'for' loop"
@@ -118,13 +127,16 @@ small_expr_list
 
 small_expr
   : atom
-    (CODE-TAG $1 nil)
+  | if_expr
+  | for_expr
+  | while_expr
   ;
 
 atom
   : NUMBER_LITERAL
   | STRING_LITERAL
   | BOOLEAN_LITERAL
+  | NAME
   ;
 
 funcall
@@ -186,6 +198,40 @@ comma_opt
 semicolon_opt
   : ;;EMPTY
   | SEMICOLON
+  ;
+
+;;;;;;; Conditional
+
+if_expr
+  : IF simple_expr THEN simple_expr ELSE simple_expr
+    (CODE-TAG $1 nil)
+  ;
+
+for_expr
+  : FOR for_cond block
+    (CODE-TAG $1 nil)
+  ;
+
+for_cond
+  : LPAREN simple_expr SEMICOLON simple_expr SEMICOLON simple_expr RPAREN
+  ;
+
+while_expr
+  : WHILE LPAREN simple_expr RPAREN block
+    (CODE-TAG $1 nil)
+  ;
+
+block
+  : BRACE_BLOCK
+    (EXPANDFULL $1 block_body)
+  ;
+
+block_body
+  : LBRACE
+    ()
+  | RBRACE
+    ()
+  | simple_expr
   ;
 
 %%
