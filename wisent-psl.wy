@@ -8,6 +8,7 @@
 
 ;;    - Needed by EXPANDFULL clauses
 %start function_parameters
+%start arguments
 
 ;; -----------------------------
 ;; Block & Parenthesis terminals
@@ -126,13 +127,32 @@ atom
   | BOOLEAN_LITERAL
   ;
 
+funcall
+  : simple_expr argument_list
+  ;
+
+argument_list
+  : PAREN_BLOCK
+    (EXPANDFULL $1 arguments)
+  ;
+
+arguments
+  : LPAREN
+    ()
+  | RPAREN
+    ()
+  | simple_expr COMMA
+  | simple_expr RPAREN
+  ;
+
 toplevel_expr
   : function_def
   | variable_def
   ;
 
 function_def
-  : DEFFUN NAME function_parameter_list
+  : DEFFUN NAME function_parameter_list simple_expr IN goal
+    (FUNCTION-TAG $2 nil $3)
   ;
 
 function_parameter_list
@@ -153,6 +173,7 @@ function_parameters
 
 variable_def
   : DEFVAR NAME ASSIGN simple_expr IN simple_expr
+    (VARIABLE-TAG $2 nil nil)
   ;
 
 ;; [',']
@@ -170,8 +191,8 @@ semicolon_opt
 %%
 
 (define-lex psl-lexer
-"Lexer for `psl-mode'"
-;;std stuff
+  "Lexer for `psl-mode'"
+  ;;std stuff
   semantic-lex-ignore-whitespace
   semantic-lex-ignore-newline
   semantic-lex-ignore-comments
