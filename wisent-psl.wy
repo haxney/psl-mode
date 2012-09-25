@@ -31,11 +31,11 @@
 %type  <punctuation> ;;syntax "\\(\\s.\\|\\s$\\|\\s'\\)+" matchdatatype string
 
 %token <punctuation> PLUS       "+"
-%token <punctuation> PLUSPLUS    "++"
+%token <punctuation> PLUSPLUS   "++"
 %token <punctuation> PLUSEQ     "+="
 
 %token <punctuation> MINUS      "-"
-%token <punctuation> MINUSMINUS  "--"
+%token <punctuation> MINUSMINUS "--"
 %token <punctuation> MINUSEQ    "-="
 
 %token <punctuation> LT         "<"
