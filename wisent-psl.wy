@@ -219,6 +219,7 @@ semicolon_opt
 
 if_expr
   : IF if_cond THEN simple_expr ELSE simple_expr
+    (CODE-TAG $1 nil)
   ;
 
 ;; simple_expr | paren_expr
@@ -230,11 +231,8 @@ if_cond
 
 ;; '(' simple_expr ')'
 paren_expr
-  : LPAREN
-  | simple_expr RPAREN
-    (CODE-TAG $1 nil)
+  : LPAREN simple_expr RPAREN
   ;
-
 
 for_expr
   : FOR for_cond block
