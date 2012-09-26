@@ -8,7 +8,8 @@
 
 ;;    - Needed by EXPANDFULL clauses
 %start function_parameters
-%start arguments
+;; %start arguments
+%start paren_expr
 %start block_body
 
 ;; -----------------------------
@@ -110,26 +111,39 @@
 %%
 
 goal
-  : simple_expr
+  : compound_expr
   | toplevel_expr
   ;
 
-;; simple_expr: small_expr (';' small_expr)* [';']
 simple_expr
-  : small_expr_list semicolon_opt
-  ;
-
-;; small_expr (';' small_expr)*
-small_expr_list
-  : small_expr
-  | small_expr_list SEMICOLON small_expr
-  ;
-
-small_expr
   : atom
   | if_expr
   | for_expr
   | while_expr
+  ;; | funcall
+  ;
+
+compound_expr
+  : simple_expr_list semicolon_opt
+  ;
+
+;; simple_expr (';' simple_expr)*
+simple_expr_list
+  : simple_expr
+  | simple_expr_list SEMICOLON simple_expr
+  ;
+
+block
+  : BRACE_BLOCK
+    (EXPANDFULL $1 block_body)
+  ;
+
+block_body
+  : LBRACE
+    ()
+  | RBRACE
+    ()
+  | compound_expr RBRACE
   ;
 
 atom
@@ -139,23 +153,24 @@ atom
   | NAME
   ;
 
-funcall
-  : simple_expr argument_list
-  ;
+;; funcall
+;;   : simple_expr argument_list
+;;     (CODE-TAG (format "funcall of (%s)" $1) $2)
+;;   ;
 
-argument_list
-  : PAREN_BLOCK
-    (EXPANDFULL $1 arguments)
-  ;
+;; argument_list
+;;   : PAREN_BLOCK
+;;     (EXPANDFULL $1 arguments)
+;;   ;
 
-arguments
-  : LPAREN
-    ()
-  | RPAREN
-    ()
-  | simple_expr COMMA
-  | simple_expr RPAREN
-  ;
+;; arguments
+;;   : LPAREN
+;;     ()
+;;   | RPAREN
+;;     ()
+;;   | simple_expr COMMA
+;;   | simple_expr RPAREN
+;;   ;
 
 toplevel_expr
   : function_def
@@ -200,12 +215,26 @@ semicolon_opt
   | SEMICOLON
   ;
 
-;;;;;;; Conditional
+;;;;;;; Control flow
 
 if_expr
-  : IF simple_expr THEN simple_expr ELSE simple_expr
+  : IF if_cond THEN simple_expr ELSE simple_expr
+  ;
+
+;; simple_expr | paren_expr
+if_cond
+  : simple_expr
+  | PAREN_BLOCK
+    (EXPANDFULL $1 paren_expr)
+  ;
+
+;; '(' simple_expr ')'
+paren_expr
+  : LPAREN
+  | simple_expr RPAREN
     (CODE-TAG $1 nil)
   ;
+
 
 for_expr
   : FOR for_cond block
@@ -219,19 +248,6 @@ for_cond
 while_expr
   : WHILE LPAREN simple_expr RPAREN block
     (CODE-TAG $1 nil)
-  ;
-
-block
-  : BRACE_BLOCK
-    (EXPANDFULL $1 block_body)
-  ;
-
-block_body
-  : LBRACE
-    ()
-  | RBRACE
-    ()
-  | simple_expr
   ;
 
 %%
