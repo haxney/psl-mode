@@ -41,3 +41,15 @@
 
 ;;;###autoload
 (add-hook 'psl-mode-hook 'wisent-psl-setup-parser)
+
+(defun wisent-psl-lex-buffer (&optional depth)
+  "Run `wisent-psl-lexer' on current buffer."
+  (interactive "p")
+  (setq depth (if depth (1- depth) 0))
+  (semantic-lex-init)
+  (let ((token-stream (semantic-lex (point-min) (point-max) depth)))
+    (with-current-buffer (get-buffer-create "*wisent-psl-lexer*")
+      (erase-buffer)
+      (pp token-stream (current-buffer))
+      (goto-char (point-min))
+      (pop-to-buffer (current-buffer)))))
