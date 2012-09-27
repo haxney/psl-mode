@@ -33,16 +33,11 @@
 ;; ------------------
 %type  <punctuation> ;;syntax "\\(\\s.\\|\\s$\\|\\s'\\)+" matchdatatype string
 
-%token <punctuation> PLUS       "+"
 %token <punctuation> PLUSPLUS   "++"
 %token <punctuation> PLUSEQ     "+="
 
-%token <punctuation> MINUS      "-"
 %token <punctuation> MINUSMINUS "--"
 %token <punctuation> MINUSEQ    "-="
-
-%token <punctuation> LT         "<"
-%token <punctuation> GT         ">"
 
 %token <punctuation> PERIOD     "."
 %token <punctuation> COLON      ":"
@@ -50,7 +45,6 @@
 %token <punctuation> COMMA      ","
 %token <punctuation> ASSIGN     "="
 %token <punctuation> AT         "@"
-
 
 ;; -----------------
 ;; Literal terminals
@@ -71,6 +65,30 @@
 ;; Keyword terminals
 ;; -----------------
 %type  <keyword> ;;syntax "\\(\\sw\\|\\s_\\)+" matchdatatype keyword
+
+%keyword PLUS       "+"
+%put     PLUS summary
+"Built-in plus operator"
+
+%keyword MINUS      "-"
+%put     MINUS summary
+"Built-in minus operator"
+
+%keyword LT         "<"
+%put     LT summary
+"Built-in less-than comparison operator"
+
+%keyword GT         ">"
+%put     GT summary
+"Built-in greater-than comparison operator"
+
+%keyword EQ         "=="
+%put     EQ summary
+"Built-in equality comparison operator"
+
+%keyword PRINT      "print"
+%put     PRINT summary
+"Built-in text output operator"
 
 %keyword IF          "if"
 %put     IF summary
