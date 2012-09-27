@@ -69,12 +69,12 @@ argument."
 
 (defvar psl-mode-syntax-table
   (let ((st (make-syntax-table)))
-    (modify-syntax-entry ?_ "w" st)
-    (modify-syntax-entry ?+ "w" st)
-    (modify-syntax-entry ?- "w" st)
-    (modify-syntax-entry ?< "w" st)
-    (modify-syntax-entry ?> "w" st)
-    (modify-syntax-entry ?= "w" st)
+    (modify-syntax-entry ?. "." st)
+    (modify-syntax-entry ?+ "." st)
+    (modify-syntax-entry ?- "." st)
+    (modify-syntax-entry ?< "." st)
+    (modify-syntax-entry ?> "." st)
+    (modify-syntax-entry ?= "." st)
     (modify-syntax-entry ?# "< b" st)
     (modify-syntax-entry ?\n "> b" st)
     st)
