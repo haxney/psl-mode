@@ -140,6 +140,8 @@ simple_expr
   | for_expr
   | while_expr
   | funcall
+  | assignment
+  | pre_post_crement_expr
   ;
 
 atom
@@ -147,7 +149,6 @@ atom
   | STRING_LITERAL
   | BOOLEAN_LITERAL
   | NAME
-  | assignment
   ;
 
 assignment
@@ -159,6 +160,34 @@ assignment
 ;; TODO: other left-hand sides
 lhs
   : NAME
+  ;
+
+;; (pre|post)(in|de)crement_expr
+pre_post_crement_expr
+  : preincrement_expr
+  | predecrement_expr
+  | postincrement_expr
+  | postdecrement_expr
+  ;
+
+;; '++' NAME
+preincrement_expr
+  : PLUSPLUS NAME
+  ;
+
+;; '--' NAME
+predecrement_expr
+  : MINUSMINUS unary_expr
+  ;
+
+;; NAME '++'
+postincrement_expr
+  : postfix_expression PLUSPLUS
+  ;
+
+;; NAME '--'
+postdecrement_expr
+  : postfix_expression MINUSMINUS
   ;
 
 compound_expr
