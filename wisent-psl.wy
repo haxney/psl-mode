@@ -129,8 +129,8 @@
 %%
 
 goal
-  : compound_expr
-  | toplevel_expr
+  : toplevel_expr
+  | compound_expr
   | simple_expr
   ;
 
@@ -203,6 +203,11 @@ toplevel_expr
   | variable_def
   ;
 
+top_or_block
+  : toplevel_expr
+  | block
+  ;
+
 function_def
   : DEFFUN NAME function_parameter_list simple_expr IN toplevel_expr
     (FUNCTION-TAG $2 nil $3)
@@ -225,8 +230,8 @@ function_parameters
   ;
 
 variable_def
-  : DEFVAR NAME ASSIGN simple_expr IN simple_expr
-    (VARIABLE-TAG $2 nil nil)
+  : DEFVAR NAME ASSIGN simple_expr IN top_or_block
+    (VARIABLE-TAG $2 "toplevel" nil)
   ;
 
 ;; [',']
