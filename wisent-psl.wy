@@ -8,7 +8,7 @@
 
 ;;    - Needed by EXPANDFULL clauses
 %start function_parameters
-;; %start arguments
+%start arguments
 %start paren_expr
 %start block_body
 
@@ -131,6 +131,7 @@
 goal
   : compound_expr
   | toplevel_expr
+  | simple_expr
   ;
 
 simple_expr
@@ -138,11 +139,11 @@ simple_expr
   | if_expr
   | for_expr
   | while_expr
-  ;; | funcall
+  | funcall
   ;
 
 compound_expr
-  : simple_expr_list semicolon_opt
+  : simple_expr_list SEMICOLON
   ;
 
 ;; simple_expr (';' simple_expr)*
@@ -171,24 +172,31 @@ atom
   | NAME
   ;
 
-;; funcall
-;;   : simple_expr argument_list
-;;     (CODE-TAG (format "funcall of (%s)" $1) $2)
-;;   ;
+builtin_op
+  : LT | GT | PLUS | MINUS | EQ | PRINT
+  ;
 
-;; argument_list
-;;   : PAREN_BLOCK
-;;     (EXPANDFULL $1 arguments)
-;;   ;
+funcall
+  ;; : simple_expr argument_list
+  ;;   (CODE-TAG "funcall" $1)
+  : builtin_op PAREN_BLOCK
+    (CODE-TAG (format "op: %s" $1) nil)
+  | NAME PAREN_BLOCK
+    (CODE-TAG (format "funcall: %s" $1) nil)
+  ;
 
-;; arguments
-;;   : LPAREN
-;;     ()
-;;   | RPAREN
-;;     ()
-;;   | simple_expr COMMA
-;;   | simple_expr RPAREN
-;;   ;
+argument_list
+  : PAREN_BLOCK
+  ;
+
+arguments
+  : LPAREN
+    ()
+  | RPAREN
+    ()
+  | simple_expr COMMA
+  | simple_expr RPAREN
+  ;
 
 toplevel_expr
   : function_def
@@ -196,7 +204,7 @@ toplevel_expr
   ;
 
 function_def
-  : DEFFUN NAME function_parameter_list simple_expr IN goal
+  : DEFFUN NAME function_parameter_list simple_expr IN toplevel_expr
     (FUNCTION-TAG $2 nil $3)
   ;
 
