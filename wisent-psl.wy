@@ -142,6 +142,25 @@ simple_expr
   | funcall
   ;
 
+atom
+  : NUMBER_LITERAL
+  | STRING_LITERAL
+  | BOOLEAN_LITERAL
+  | NAME
+  | assignment
+  ;
+
+assignment
+  : lhs ASSIGN simple_expr
+  | lhs PLUSEQ simple_expr
+  | lhs MINUSEQ simple_expr
+  ;
+
+;; TODO: other left-hand sides
+lhs
+  : NAME
+  ;
+
 compound_expr
   : simple_expr_list SEMICOLON
   ;
@@ -160,16 +179,8 @@ block
 block_body
   : LBRACE
     ()
-  | RBRACE
-    ()
   | compound_expr RBRACE
-  ;
-
-atom
-  : NUMBER_LITERAL
-  | STRING_LITERAL
-  | BOOLEAN_LITERAL
-  | NAME
+  | simple_expr RBRACE
   ;
 
 builtin_op
