@@ -3,8 +3,9 @@
 ;; The default goal.
 %start goal
 ;; Alternate goals needed for re-parse.
-%start function_def
+%start function_parameter_list
 %start variable_def
+%start function_def
 
 ;;    - Needed by EXPANDFULL clauses
 %start function_parameters
@@ -188,14 +189,15 @@ simple_expr_list
 
 block
   : BRACE_BLOCK
-    (EXPANDFULL $1 block_body)
+    (CODE-TAG "block" nil :body (EXPANDFULL $1 block_body))
   ;
 
 block_body
   : LBRACE
-    ()
   | compound_expr RBRACE
+    (message "compound expression is: %s" $1)
   | simple_expr RBRACE
+    (message "simple expression is: %s" $1)
   ;
 
 builtin_op
@@ -225,18 +227,20 @@ arguments
   ;
 
 toplevel_expr
-  : function_def
-  | variable_def
+  : function_def IN top_or_block
+  | variable_def IN top_or_block
   ;
 
 top_or_block
   : toplevel_expr
   | block
+    (CODE-TAG "block-body" nil)
+  | simple_expr
   ;
 
 function_def
-  : DEFFUN NAME function_parameter_list simple_expr IN top_or_block
-    (FUNCTION-TAG $2 nil $3)
+  : DEFFUN NAME function_parameter_list simple_expr
+    (FUNCTION-TAG $2 nil $3 :body $4)
   ;
 
 function_parameter_list
@@ -256,8 +260,8 @@ function_parameters
   ;
 
 variable_def
-  : DEFVAR NAME ASSIGN simple_expr IN top_or_block
-    (VARIABLE-TAG $2 "toplevel" nil)
+  : DEFVAR NAME ASSIGN simple_expr
+    (VARIABLE-TAG $2 nil $4)
   ;
 
 ;; [',']
